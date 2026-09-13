@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    ★ YIN, AUDIO, MIC & SCORING
    ================================================================ */
 const YIN={
@@ -869,7 +869,7 @@ document.getElementById('btnCustomProg').onclick = () => {
       RhythmEngine.stop(); UI.refreshRhBtn(false);
       if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
     }else{
-      if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      if(document.getElementById('chkPlayMode') && document.getElementById('chkPlayMode').checked && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
 
       RhythmEngine.start({
         onBeat:ev=>App.onBeat(ev),
@@ -939,3 +939,4 @@ document.getElementById('missionBar').addEventListener('click', () => {
     document.exitFullscreen().catch(()=>{});
   }
 });
+
