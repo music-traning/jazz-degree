@@ -9,8 +9,8 @@ test.describe('Reset behaviors', () => {
     const before = await page.evaluate(() => ScoreTracker.history.length);
     expect(before).toBeGreaterThan(0);
 
-    // Play Mode から抜ける
-    await page.keyboard.press('Escape');
+    // 強制的にフルスクリーンを解除
+    await page.evaluate(() => { if (document.fullscreenElement) document.exitFullscreen(); });
     await page.waitForTimeout(500);
 
     await page.click('#btnResetSettings');
