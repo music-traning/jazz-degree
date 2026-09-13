@@ -1,3 +1,26 @@
+
+function exitFS() {
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+}
+function reqFS(el) {
+  if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+function handleFs() {
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    document.body.classList.add('play-mode-active');
+  } else {
+    document.body.classList.remove('play-mode-active');
+    if(typeof RhythmEngine !== 'undefined' && RhythmEngine.isRunning()) {
+      RhythmEngine.stop();
+      if(typeof UI !== 'undefined' && UI.refreshRhBtn) UI.refreshRhBtn(false);
+    }
+  }
+  if (typeof UI !== 'undefined' && UI.refreshFB) UI.refreshFB();
+}
+document.addEventListener('webkitfullscreenchange', handleFs);
+
 ﻿/* ================================================================
    ★ YIN, AUDIO, MIC & SCORING
    ================================================================ */
@@ -374,6 +397,7 @@ const App={
   onSessionEnd(){
     RhythmEngine.stop();
     UI.refreshRhBtn(false);
+    exitFS();
     UI.showRetroResult();
   }
 };
@@ -867,9 +891,9 @@ document.getElementById('btnCustomProg').onclick = () => {
   document.getElementById('btnRhStart').onclick=()=>{
     if(RhythmEngine.isRunning()){
       RhythmEngine.stop(); UI.refreshRhBtn(false);
-      if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+      exitFS();
     }else{
-      if(document.getElementById('chkPlayMode') && document.getElementById('chkPlayMode').checked && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      if(document.getElementById('chkPlayMode') && document.getElementById('chkPlayMode').checked && !document.fullscreenElement && !document.webkitFullscreenElement) reqFS(document.documentElement);
 
       RhythmEngine.start({
         onBeat:ev=>App.onBeat(ev),
@@ -925,14 +949,7 @@ if (typeof window !== 'undefined') {
 }
 
 
-document.addEventListener('fullscreenchange', () => {
-  if (document.fullscreenElement) {
-    document.body.classList.add('play-mode-active');
-  } else {
-    document.body.classList.remove('play-mode-active');
-  }
-  if (typeof UI !== 'undefined' && UI.refreshFB) UI.refreshFB();
-});
+document.addEventListener('fullscreenchange', handleFs);
 
 document.getElementById('missionBar').addEventListener('click', () => {
   if (document.fullscreenElement) {
@@ -942,4 +959,4 @@ document.getElementById('missionBar').addEventListener('click', () => {
 
 
 
-document.getElementById('btnExitFs').onclick = () => { if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); };
+document.getElementById('btnExitFs').onclick = () => { exitFS(); };
