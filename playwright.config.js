@@ -15,7 +15,7 @@ module.exports = defineConfig({
       args: [
         '--use-fake-device-for-media-stream',
         '--use-fake-ui-for-media-stream',
-        --use-file-for-fake-audio-capture= + path.resolve(__dirname, 'tests/fixtures/tone-f3.wav'),
+        `--use-file-for-fake-audio-capture=${path.resolve(__dirname, 'tests/fixtures/tone-f3.wav')}`,
       ],
     },
     permissions: ['microphone'],
