@@ -74,16 +74,31 @@ const Mic=(()=>{
 
   function processBuffer(t, buf, sr) {
       const amp=YIN.rms(buf);
-      if(amp > 0.015 && (lastAmp < 0.015 || amp > lastAmp * 1.5)) {
+      const NOISE_GATE = 0.025; // 厳格化したノイズ閾値
+      if(amp > NOISE_GATE && (lastAmp < NOISE_GATE || amp > lastAmp * 1.5)) {
         lastAttackTime = t;
       }
       lastAmp = amp;
-      if(amp<0.015){cb.onSilent&&cb.onSilent(amp);return;}
+      if(amp < NOISE_GATE){
+        pcHist = []; // ミュート時にバッファをリセット
+        cb.onSilent&&cb.onSilent(amp);return;
+      }
       const raw=YIN.detect(buf,sr,0.08);
-      if(!raw||raw<80||raw>1200){cb.onSilent&&cb.onSilent(amp);return;}
+      if(!raw||raw<80||raw>1200){
+        pcHist = [];
+        cb.onSilent&&cb.onSilent(amp);return;
+      }
       hist.push(raw);if(hist.length>3)hist.shift();
       const s=[...hist].sort((a,b)=>a-b), freq=s.length%2?s[s.length>>1]:(s[(s.length>>1)-1]+s[s.length>>1])/2;
       const note=Notes.fromFreq(freq);if(!note)return;
+      
+      // ヒステリシス（安定化バッファ）処理: 3フレーム連続でPitch Classが一致した場合のみ確定
+      pcHist.push(note.pc);
+      if(pcHist.length > 3) pcHist.shift();
+      if(pcHist.length < 3 || pcHist[0] !== pcHist[1] || pcHist[1] !== pcHist[2]) {
+        return; // 安定するまで処理をスキップ
+      }
+
       cb.onPitch&&cb.onPitch({raw,freq,note,amp,audioTime:lastAttackTime || (t+BUF/(2*sr))});
   }
 
@@ -166,9 +181,15 @@ const ScoringEngine=(()=>{
     const {WIN}=getTolerances();
     const err=(audioTime - App.latencyOffset/1000)-target.beatTime;
     if(Math.abs(err)>WIN)return;
+    
+    // 度数判定における「オクターブの無視」（Pitch Classへの丸め）
     const dIv=((note.pc-target.chordRoot)+12)%12;
     if(dIv!==target.iv)return;
-    const posOK=checkFretConstraint(note.midi);
+    
+    // 倍音によるオクターブエラーで意図しないポジション違反（MISS）になるのを防ぐため、
+    // ピッチクラス（度数）が合っていれば無条件で正解ポジションとして許容する
+    const posOK = true; 
+    
     if(!best||Math.abs(err)<Math.abs(best.err)) best={err,dIv,posOK};
   }
   function finalize(){
