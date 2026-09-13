@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+
+<!-- 繧ｵ繧､繝医・隱ｬ譏弱→繝輔ぃ繝薙さ繝ｳ・・NG逕ｻ蜒上↓螟画峩・・-->
+<meta name="description" content="繧ｹ繧ｿ繝ｳ繝繝ｼ繝画峇縺ｮ繧ｳ繝ｼ繝峨ヨ繝ｼ繝ｳ繧帝浹螢ｰ縺ｧ諡ｾ縺｣縺ｦ迢吶＞謦・■縺吶ｋ繧｢繝励Μ縺ｧ縺吶・/>
+<link rel="icon" type="image/png" href="icon.png"/>
+
+<!-- OGP險ｭ螳夲ｼ・acebook, LINE縺ｪ縺ｩSNS繧ｷ繧ｧ繧｢逕ｨ・・-->
+<meta property="og:url" content="https://jazz-degree.vercel.app/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Jazz Guitar degree Trainer - Final"/>
+<meta property="og:description" content="繧ｹ繧ｿ繝ｳ繝繝ｼ繝画峇縺ｮ繧ｳ繝ｼ繝峨ヨ繝ｼ繝ｳ繧帝浹螢ｰ縺ｧ諡ｾ縺｣縺ｦ迢吶＞謦・■縺吶ｋ繧｢繝励Μ縺ｧ縺吶・/>
+<meta property="og:image" content="https://jazz-degree.vercel.app/icon.png"/>
+
+<!-- X(譌ｧTwitter)繧ｫ繝ｼ繝芽ｨｭ螳・-->
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Jazz Guitar degree Trainer - Final"/>
+<meta name="twitter:description" content="繧ｹ繧ｿ繝ｳ繝繝ｼ繝画峇縺ｮ繧ｳ繝ｼ繝峨ヨ繝ｼ繝ｳ繧帝浹螢ｰ縺ｧ諡ｾ縺｣縺ｦ迢吶＞謦・■縺吶ｋ繧｢繝励Μ縺ｧ縺吶・/>
+<meta name="twitter:image" content="https://jazz-degree.vercel.app/icon.png"/>
+
+<title>Jazz Guitar degree Trainer</title>
+<!-- Vercel Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<!-- Overlays -->
+<div class="overlay" id="fbOverlay"><div class="fb-badge" id="fbBadge"></div></div>
+<div class="countin-bg" id="countinBg"><div class="countin-txt" id="countinTxt">1</div></div>
+<div class="retro-bg" id="retroBg">
+  <div class="retro-box">
+    <div class="retro-title">SESSION COMPLETE</div>
+    <div class="retro-msg" id="retroMsg"></div>
+    <div class="retro-stats" id="retroStats"></div>
+    <div style="text-align:center"><button class="retro-btn" id="btnRetroClose">Continue Practice</button></div>
+  </div>
+</div>
+<!-- Help Modal -->
+<div class="modal-bg hidden" id="helpModal">
+  <div class="modal">
+    <button class="btn btn-ico modal-close" id="btnHelpClose">&#10005;</button>
+    <h2 id="helpTitle">&#127925; Jazz Guitar Trainer - Manual</h2>
+    <div id="helpBody" class="help-content"></div>
+  </div>
+</div>
+<!-- Custom Prog Modal -->
+<div class="modal-bg hidden" id="customModal">
+  <div class="modal">
+    <button class="btn btn-ico modal-close" id="btnCustomClose">&#10005;</button>
+    <h2 id="customProgTitle" data-i18n="customProgTitle">Custom Progression</h2>
+    <div style="margin-bottom:10px; font-size:11px; color:var(--tx2);">
+      Space-separated chords (e.g. Dm7 G7 CM7 CM7). Supported qualities: M7, m7, 7, m7b5, dim7, 6, m6, sus4, 7sus4, add9
+    </div>
+    <textarea id="customProgTxt" style="width:100%;height:80px;background:var(--bg);color:var(--tx);border:1px solid var(--bd2);padding:8px;font-family:monospace;border-radius:var(--r8);margin-bottom:12px;"></textarea>
+    <button class="btn btn-grn" id="btnCustomApply" style="width:100%;justify-content:center;">Apply</button>
+  </div>
+</div>
+
+<!-- Diagnostics Modal -->
+<div class="modal-bg hidden" id="diagModal">
+  <div class="modal" style="max-width: 650px;">
+    <button class="btn btn-ico modal-close" id="btnDiagClose">&#10005;</button>
+    <h2>Diagnostics</h2>
+    <div style="margin-bottom:10px; font-size:11px; color:var(--tx2);">
+      Check raw pitch detection values to identify octave errors or noise. This is for visual confirmation only.
+    </div>
+    <div style="max-height: 300px; overflow-y: auto; background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r8); padding: 4px;">
+      <table style="width:100%; font-size:11px; text-align:left; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--bd2); color:var(--tx2);">
+            <th style="padding:4px;">Time</th>
+            <th style="padding:4px;">Raw Hz</th>
+            <th style="padding:4px;">Freq (Med)</th>
+            <th style="padding:4px;">Note</th>
+            <th style="padding:4px;">Amp</th>
+          </tr>
+        </thead>
+        <tbody id="diagTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hdr-logo">Jazz Guitar Trainer <span>Final</span></div>
+  <select id="songSel" class="sel-dd" style="margin-left:12px"></select>
+  <button class="btn btn-sm" id="btnCustomProg" data-i18n="customProg" style="margin-left:4px">Custom</button>
+  <select id="keySel" class="sel-dd" style="margin-left:8px"></select>
+  <div class="hdr-gap"></div>
+  <button class="btn btn-sm" id="btnDiag" title="Diagnostics">Diag</button>
+  <button class="btn btn-sm" id="btnLang">EN</button>
+  <button class="btn btn-sm btn-ico" id="btnHelp" title="Help">&#63;</button>
+  <div class="mdot" id="mdhdr"></div>
+  <button class="btn" id="btnMic">&#9654; <span data-i18n="startMic">Start Mic</span></button>
+</header>
+
+<div class="app-body">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="card">
+    <div class="ttl" data-i18n="currentChord">Current Chord</div>
+    <div class="chord-name" id="chordName">Cm7</div>
+    <div class="chord-func" id="chordFunc">iim7</div>
+    <div class="chord-tones" id="chordTones"></div>
+  </div>
+  <div class="card">
+    <div class="ttl" data-i18n="pitchDetection">Pitch Detection</div>
+    <div class="pnote sil" id="pNote">&#8212;</div>
+    <div class="phz" id="pHz">&#8212; Hz</div>
+    <div class="vu-wrap"><div class="vu-trk"><div class="vu-fill" id="vuFill"></div></div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="ttl" style="margin:0" data-i18n="sessionScore">Score</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-sm" id="btnResetSettings">Reset</button>
+        <button class="btn btn-sm btn-red" id="btnFactoryReset" title="Factory Reset">&#9881;</button>
+      </div>
+    </div>
+    <div class="score-num" id="scoreAvg">&#8212;</div>
+    <div class="score-pips" id="scorePips"></div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:3px" id="scoreAttempts">0 attempts</div>
+  </div>
+  <div class="card">
+    <div class="ttl" data-i18n="progression">Progression</div>
+    <div class="prog-strip" id="progStrip"></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="maincol">
+  <div class="card">
+    <div class="ttl">Control Engine</div>
+    <div class="ctrl-row" style="align-items:center">
+      
+      <div class="ctrl-sec" style="align-items:center;min-width:110px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <button class="btn btn-sm btn-ico" id="btnBpmDn">&#8722;</button>
+          <div style="font-size:24px;font-weight:800;width:42px;text-align:center" id="rhBpm">120</div>
+          <button class="btn btn-sm btn-ico" id="btnBpmUp">&#43;</button>
+        </div>
+        <input type="range" id="bpmSlider" min="40" max="240" value="120" style="width:100%;margin-bottom:4px;accent-color:var(--accent);">
+        <button class="btn btn-sm" id="btnTap" style="width:100%;justify-content:center">Tap Tempo</button>
+      </div>
+      
+      <div class="ctrl-sec">
+        <div class="radio-grp">
+          <button class="rtgl sel" id="btnModePrac" data-i18n="practice">Practice</button>
+          <button class="rtgl" id="btnModeTest" data-i18n="test">Test</button>
+        </div>
+        <div class="radio-grp" id="bpcGrp" style="margin-top:5px">
+          <button class="rtgl sel" data-bpc="1">1 Bar</button>
+          <button class="rtgl" data-bpc="2">2 Bars</button>
+          <button class="rtgl" data-bpc="4">4 Bars</button>
+        </div>
+      </div>
+      
+      <div class="ctrl-sec">
+        <div class="radio-grp" id="levelGrp">
+          <button class="rtgl" data-lvl="beginner">Beginner</button>
+          <button class="rtgl sel" data-lvl="intermediate">Intermediate</button>
+          <button class="rtgl" data-lvl="advanced">Advanced</button>
+        </div>
+        <div class="radio-grp" id="patGrp" style="margin-top:5px">
+          <button class="rtgl sel" data-pat="4beat">4 Beat</button>
+          <button class="rtgl" data-pat="backbeat">2 &amp; 4</button>
+          <button class="rtgl" data-pat="beat1">Beat 1</button>
+          <button class="rtgl" data-pat="4-1">4&#x2011;1</button>
+        </div>
+      </div>
+      
+      <button class="btn btn-grn" id="btnRhStart" style="padding:10px 18px;height:100%">&#9654; <span data-i18n="start">Start</span></button>
+    </div>
+    
+    <div class="ctrl-row" style="margin-top:10px;border-top:1px solid var(--bd);padding-top:10px;align-items:center;">
+      <div class="ctrl-sec">
+        <div class="ttl" data-i18n="fretConstraint" style="margin:0">Fret Constraint</div>
+        <div class="fret-range">
+          <input type="range" id="minFret" min="0" max="15" value="0">
+          <span id="fretRangeLbl">0 - 15</span>
+          <input type="range" id="maxFret" min="0" max="15" value="15">
+        </div>
+      </div>
+
+      <div class="ctrl-sec" style="margin-left:20px;">
+        <div class="ttl" style="margin:0; display:flex; justify-content:space-between;">Latency Offset <button id="btnCalibrate" class="btn btn-sm" style="padding:1px 4px; font-size:9px;">Calibrate</button></div>
+        <div class="fret-range" style="margin-top:4px;">
+          <input type="range" id="latencyOffset" min="-200" max="200" value="0">
+          <span id="latencyLbl" style="width:45px;text-align:right;">0ms</span>
+        </div>
+      </div>
+
+      <div class="ctrl-sec" style="margin-left:20px;">
+        <div class="ttl" data-i18n="degreeBase" style="margin:0">Degree Base</div>
+        <div class="radio-grp" id="degBaseGrp" style="margin-top:6px;">
+          <button class="rtgl sel" data-deg="chord">Chord</button>
+          <button class="rtgl" data-deg="key">Key</button>
+        </div>
+      </div>
+      
+      <div class="ctrl-sec" style="margin-left:20px;">
+        <div class="ttl" style="margin:0">Single Chord Drill</div>
+        <div style="display:flex;gap:4px;margin-top:6px;align-items:center;">
+          <input type="checkbox" id="chkSingleDrill" style="accent-color:var(--accent);">
+          <select id="selSingleRoot" class="sel-dd" disabled></select>
+          <select id="selSingleQual" class="sel-dd" disabled></select>
+        </div>
+      </div>
+
+      <div class="ctrl-sec" style="margin-left:auto">
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2);cursor:pointer;">
+          <input type="checkbox" id="missionTargetChk" style="accent-color:var(--accent)"/>
+          <span data-i18n="missionTargetOnly">Mission Target Only</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="mission-bar" id="missionBar">
+    <div style="flex:1; border-right:1px solid var(--bd2); padding-right:10px;">
+      <div class="mission-lbl" style="background:#38d660; color:#000;">NOW</div>
+      <div class="mission-txt" id="missionNow">---</div>
+    </div>
+    <div style="flex:1; padding-left:10px;">
+      <div class="mission-lbl" style="background:#4da8ff; color:#000;">NEXT</div>
+      <div class="mission-txt" id="missionNext">---</div>
+    </div>
+  </div>
+
+  <div class="card" style="flex:1">
+    <div class="ttl">Fretboard</div>
+    <div class="fb-wrap"><svg id="fretboard" viewBox="0 0 820 196" preserveAspectRatio="xMidYMid meet"></svg></div>
+  </div>
+</main>
+</div>
+<footer style="text-align:center; padding:6px; font-size:11px; color:var(--tx2); background:var(--surface); border-top:1px solid var(--bd); flex-shrink:0; letter-spacing:0.05em;">
+  <div style="margin-bottom:4px; opacity:0.8;">※マイク音声は外部送信・録音されず、ブラウザ内でのみ処理されます。(Vercel Analyticsを使用しています)</div>
+  &copy; 2026 <a href="https://note.com/jazzy_begin" target="_blank" style="color:var(--tx2); text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--tx2)'">buro</a>
+</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+

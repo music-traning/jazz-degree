@@ -1,0 +1,11 @@
+﻿node_modules/
+test-results/
+playwright-report/
+playwright/.cache/
+backup/
+*.html
+!index.html
+full_js_temp.js
+check_errors.js
+extract.js
+inject.js
