@@ -1,4 +1,4 @@
-
+﻿
 function exitFS() {
   if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
@@ -79,8 +79,8 @@ const Mic=(()=>{
       }
       lastAmp = amp;
       if(amp<0.015){cb.onSilent&&cb.onSilent(amp);return;}
-      const raw=YIN.detect(buf,sr,0.12);
-      if(!raw||raw<72||raw>1400){cb.onSilent&&cb.onSilent(amp);return;}
+      const raw=YIN.detect(buf,sr,0.08);
+      if(!raw||raw<80||raw>1200){cb.onSilent&&cb.onSilent(amp);return;}
       hist.push(raw);if(hist.length>3)hist.shift();
       const s=[...hist].sort((a,b)=>a-b), freq=s.length%2?s[s.length>>1]:(s[(s.length>>1)-1]+s[s.length>>1])/2;
       const note=Notes.fromFreq(freq);if(!note)return;
@@ -96,7 +96,19 @@ const Mic=(()=>{
       throw e;
     }
     const ctx=getCtx();if(ctx.state==='suspended')await ctx.resume();
-    src=ctx.createMediaStreamSource(stream);an=ctx.createAnalyser();an.fftSize=BUF;src.connect(an);
+    src=ctx.createMediaStreamSource(stream);
+    
+    // LPF (ローパスフィルター) の挿入：ジャズギターの実用音域（最大約1.2kHz）以上の倍音・ノイズをカット
+    let lpf = ctx.createBiquadFilter();
+    lpf.type = 'lowpass';
+    lpf.frequency.value = 1200; // カットオフ周波数
+    lpf.Q.value = 0.707; // バターワース特性（通過帯域を平坦に）
+
+    an=ctx.createAnalyser();an.fftSize=BUF;
+    
+    // ルーティング: Source -> LPF -> Analyser -> Worklet
+    src.connect(lpf);
+    lpf.connect(an);
     lastAmp = 0;
     lastAttackTime = 0;
 
@@ -105,7 +117,7 @@ const Mic=(()=>{
       try {
         await ctx.audioWorklet.addModule('pitch-processor.js');
         wn = new AudioWorkletNode(ctx, 'pitch-processor');
-        src.connect(wn);
+        an.connect(wn);
         wn.connect(ctx.destination);
         wn.port.onmessage = e => {
            processBuffer(ctx.currentTime, e.data.buffer, ctx.sampleRate);
@@ -964,3 +976,4 @@ document.getElementById('missionBar').addEventListener('click', () => {
 
 
 document.getElementById('btnExitFs').onclick = () => { exitFS(); };
+
