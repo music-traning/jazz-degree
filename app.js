@@ -933,3 +933,9 @@ document.addEventListener('fullscreenchange', () => {
   }
   if (typeof UI !== 'undefined' && UI.refreshFB) UI.refreshFB();
 });
+
+document.getElementById('missionBar').addEventListener('click', () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(()=>{});
+  }
+});
