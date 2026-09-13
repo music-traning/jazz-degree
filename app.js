@@ -152,6 +152,10 @@ const ScoringEngine=(()=>{
     }
     ScoreTracker.record(result);
     UI.showFeedback(result);
+    if(result.grade==='EXCELLENT' || result.grade==='GOOD'){
+      document.body.classList.add('glow-success');
+      setTimeout(()=>document.body.classList.remove('glow-success'), 150);
+    }
     target=null;best=null;
   }
   function checkTimeout(now){
@@ -413,6 +417,17 @@ const FB=(()=>{
     if(!svg)return;
     let dg=svg.querySelector('#fbd'), hg=svg.querySelector('#fbh');
     dg.innerHTML='';hg.innerHTML='';
+    if (document.body.classList.contains('play-mode-active')) {
+      let minF = App.minFret, maxF = App.maxFret;
+      if(maxF > 15) maxF = 15;
+      if(minF < 0) minF = 0;
+      let pad = 10;
+      let minX = minF === 0 ? 0 : NX + (minF - 1) * FW - pad;
+      let maxX = NX + maxF * FW + pad;
+      svg.setAttribute('viewBox', `${minX} 0 ${maxX - minX} 185`);
+    } else {
+      svg.setAttribute('viewBox', '0 0 815 185');
+    }
     if(!activeProg.length)return;
     let ch=activeProg[App.idx];
     let keyRoot = keyToPc(AppKey);
@@ -852,7 +867,10 @@ document.getElementById('btnCustomProg').onclick = () => {
   document.getElementById('btnRhStart').onclick=()=>{
     if(RhythmEngine.isRunning()){
       RhythmEngine.stop(); UI.refreshRhBtn(false);
+      if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
     }else{
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+
       RhythmEngine.start({
         onBeat:ev=>App.onBeat(ev),
         onChord:ev=>App.onChordChange(ev),
@@ -905,3 +923,13 @@ if (typeof window !== 'undefined') {
   // Since activeProg is let in data.js, it might not be global depending on how it's loaded.
   // Wait, standard <script> creates globals. So it's fine.
 }
+
+
+document.addEventListener('fullscreenchange', () => {
+  if (document.fullscreenElement) {
+    document.body.classList.add('play-mode-active');
+  } else {
+    document.body.classList.remove('play-mode-active');
+  }
+  if (typeof UI !== 'undefined' && UI.refreshFB) UI.refreshFB();
+});

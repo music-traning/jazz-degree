@@ -21,7 +21,7 @@ const I18N={
       <h3>2. Basic Usage (基本操作)</h3>
       <ul>
         <li><strong>Start Mic</strong>: マイクを許可し、ギターの単音ピッチ検出を開始します。</li>
-        <li><strong>Rhythm Engine</strong>: Startを押すと、指定した進行（Progression）とBPMでクリックが再生されます。</li>
+        <li><strong>Rhythm Engine</strong>: Startを押すと、指定した進行（Progression）とBPMでクリックが再生されます。さらに自動的に「Play Mode（没入型全画面モード）」に移行し、設定項目が隠れて視認性が最大化されます（元の設定画面に戻るにはEscキーを押してください）。</li>
         <li><strong>Test Mode</strong>: 現在のコードに対して「弾くべき度数（ターゲット）」がNOWパネルに出題されます。正しいタイミング・正しい音程・正しいポジションで弾くとスコアが加算されます。</li>
       </ul>
 
@@ -91,7 +91,7 @@ const I18N={
       <h3>2. Basic Usage</h3>
       <ul>
         <li><strong>Start Mic</strong>: Enable your microphone for real-time pitch detection.</li>
-        <li><strong>Rhythm Engine</strong>: Press Start to play the click track along with the chord progression.</li>
+        <li><strong>Rhythm Engine</strong>: Press Start to play the click track along with the chord progression. This will automatically transition into "Play Mode" (immersive fullscreen) to maximize visibility by hiding all settings. (Press Esc to return to the setup screen).</li>
         <li><strong>Test Mode</strong>: The NOW panel will dictate a target interval for the current chord. Play the correct pitch, at the right time, in the right position to score points.</li>
       </ul>
 
