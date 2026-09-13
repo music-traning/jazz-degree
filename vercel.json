@@ -1,3 +1,5 @@
 ﻿{
-  "ignoreCommand": "npm run test"
+  "github": {
+    "silent": true
+  }
 }
