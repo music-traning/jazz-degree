@@ -114,15 +114,23 @@ const Mic=(()=>{
     src=ctx.createMediaStreamSource(stream);
     
     // LPF (ローパスフィルター) の挿入：ジャズギターの実用音域（最大約1.2kHz）以上の倍音・ノイズをカット
+    // HPF (ハイパスフィルター): 80Hz以下の低周波ノイズ（エアコン等）をカット
+    let hpf = ctx.createBiquadFilter();
+    hpf.type = 'highpass';
+    hpf.frequency.value = 75; // 6弦開放(82.4Hz)付近
+    hpf.Q.value = 0.707;
+
+    // LPF (ローパスフィルター): 1.2kHz以上の高次倍音やピッキングノイズをカット
     let lpf = ctx.createBiquadFilter();
     lpf.type = 'lowpass';
-    lpf.frequency.value = 1200; // カットオフ周波数
-    lpf.Q.value = 0.707; // バターワース特性（通過帯域を平坦に）
+    lpf.frequency.value = 1200;
+    lpf.Q.value = 0.707;
 
     an=ctx.createAnalyser();an.fftSize=BUF;
     
-    // ルーティング: Source -> LPF -> Analyser -> Worklet
-    src.connect(lpf);
+    // ルーティング: Source -> HPF -> LPF -> Analyser -> Worklet
+    src.connect(hpf);
+    hpf.connect(lpf);
     lpf.connect(an);
     lastAmp = 0;
     lastAttackTime = 0;
@@ -386,6 +394,41 @@ const Settings={
 /* ================================================================
    ★ STATE, UI & BOOTSTRAP
    ================================================================ */
+
+// --- Throttle/Debounce for Rendering (UI/DOM Updates) ---
+const UIRenderer = {
+  lastRender: 0,
+  interval: 64, // ~15fps (64ms). ジャズテンポ(120-200BPM)において、16分音符の最短が約75msのため、64ms間隔の描画は視覚的なレスポンスと発熱抑制の最適解。
+  state: {
+    amp: 0,
+    pitchData: null,
+    silent: true,
+    dirty: false
+  },
+  loop(timestamp) {
+    requestAnimationFrame((t) => UIRenderer.loop(t));
+    if (!UIRenderer.state.dirty) return;
+    if (timestamp - UIRenderer.lastRender < UIRenderer.interval) return;
+    
+    UIRenderer.lastRender = timestamp;
+    UIRenderer.state.dirty = false;
+    
+    // Execute DOM updates
+    UI.refreshVU(UIRenderer.state.amp);
+    if (!UIRenderer.state.silent && UIRenderer.state.pitchData) {
+       UI.logDiag(UIRenderer.state.pitchData);
+       document.getElementById('pNote').textContent = UIRenderer.state.pitchData.note.name + UIRenderer.state.pitchData.note.oct;
+       document.getElementById('pNote').classList.remove('sil');
+       document.getElementById('pHz').textContent = UIRenderer.state.pitchData.freq.toFixed(1) + ' Hz';
+       FB.render(); // SVG rendering is heavy
+    } else {
+       let ne=document.getElementById('pNote');
+       if(!ne.classList.contains('sil')){ne.textContent='—';ne.classList.add('sil');document.getElementById('pHz').textContent='— Hz';}
+    }
+  }
+};
+requestAnimationFrame((t) => UIRenderer.loop(t));
+
 const App={
   bpm:120, testMode:false, level:'intermediate', minFret:0, maxFret:15, idx:0, missionTargetOnly:false, latencyOffset:0,
   pattern:'4beat', barsPerChord:1, degreeBase:'chord', detPC:null, currentTarget:null, nextTarget:null,
@@ -417,15 +460,19 @@ const App={
     }
   },
   onPitch({raw,freq,note,amp,audioTime}){
-    UI.logDiag({raw,freq,note,amp});
     this.detPC=note.pc;
-    ScoringEngine.onPitch(note,audioTime);
-    UI.refreshPitch({freq,note,amp});
-    UI.refreshFB();
+    ScoringEngine.onPitch(note,audioTime); // Scoring must run synchronously (unthrottled) for latency accuracy
+    
+    UIRenderer.state.pitchData = {raw,freq,note,amp};
+    UIRenderer.state.amp = amp;
+    UIRenderer.state.silent = false;
+    UIRenderer.state.dirty = true;
   },
   onSilent(amp){
-    UI.refreshVU(amp);
     this.detPC=null;
+    UIRenderer.state.amp = amp;
+    UIRenderer.state.silent = true;
+    UIRenderer.state.dirty = true;
   },
   onSessionEnd(){
     RhythmEngine.stop();
