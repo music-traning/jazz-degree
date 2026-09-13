@@ -940,3 +940,6 @@ document.getElementById('missionBar').addEventListener('click', () => {
   }
 });
 
+
+
+document.getElementById('btnExitFs').onclick = () => { if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); };
