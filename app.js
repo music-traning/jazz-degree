@@ -624,6 +624,10 @@ const UI={
     let b=document.getElementById('btnRhStart');
     b.innerHTML=running?`&#9209; ${t('stop')}`:`&#9654; ${t('start')}`;
     b.className=running?'btn btn-red':'btn btn-grn';
+    if(!running) {
+      document.getElementById('countinBg').style.opacity='0';
+      document.getElementById('countinBg').style.pointerEvents='none';
+    }
   },
   triggerVisualCountin(txt){
     let ov=document.getElementById('countinBg'), tEl=document.getElementById('countinTxt');
