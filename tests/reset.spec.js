@@ -9,6 +9,10 @@ test.describe('Reset behaviors', () => {
     const before = await page.evaluate(() => ScoreTracker.history.length);
     expect(before).toBeGreaterThan(0);
 
+    // Play Mode から抜ける
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+
     await page.click('#btnResetSettings');
     const after = await page.evaluate(() => ScoreTracker.history.length);
     expect(after).toBe(0);
