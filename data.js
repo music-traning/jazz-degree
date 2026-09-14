@@ -3,6 +3,7 @@
    ================================================================ */
 const I18N={
   ja:{
+    privacy: '※マイク音声は外部送信・録音されず、ブラウザ内でのみ処理されます。',
     startMic:'Mic 開始', stopMic:'Mic 停止', listening:'検出中',
     currentChord:'現在のコード', pitchDetection:'ピッチ検出',
     sessionScore:'セッションスコア', progression:'プログレッション',
@@ -73,6 +74,7 @@ const I18N={
     ]
   },
   en:{
+    privacy: '* Mic audio is processed locally in your browser and is never recorded or sent externally.',
     startMic:'Start Mic', stopMic:'Stop Mic', listening:'Listening',
     currentChord:'Current Chord', pitchDetection:'Pitch Detection',
     sessionScore:'Session Score', progression:'Progression',
@@ -245,4 +247,5 @@ function getIvLabel(iv){
   const MAP={0:'R',1:'\u266d9',2:'9',3:'\u266d3',4:'3',5:'11',6:'\u266d5',7:'5',8:'\u266d13',9:'13',10:'\u266d7',11:'\u03947'};
   return MAP[iv]||iv;
 }
+
 
