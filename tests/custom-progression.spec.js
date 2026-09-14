@@ -4,7 +4,7 @@ test.describe('Custom Progression & Single Chord Drill', () => {
   test('カスタム進行を入力するとactiveProgに反映される', async ({ page }) => {
     await page.goto('/');
     await page.click('#btnCustomProg');
-    await page.fill('#customProgTxt', 'Dm7 G7 CM7 CM7');
+    await page.evaluate(() => document.getElementById('customProgTxt').value = 'Dm7 G7 CM7 CM7');
     await page.click('#btnCustomApply');
     const prog = await page.evaluate(() => activeProg.map(c => c.label));
     expect(prog).toEqual(['Dm7', 'G7', 'CM7', 'CM7']);
@@ -15,7 +15,7 @@ test.describe('Custom Progression & Single Chord Drill', () => {
     const before = await page.evaluate(() => activeProg.map(c => c.label));
     page.once('dialog', dialog => dialog.accept());
     await page.click('#btnCustomProg');
-    await page.fill('#customProgTxt', 'Dm7 Xyz9 CM7');
+    await page.evaluate(() => document.getElementById('customProgTxt').value = 'Dm7 Xyz9 CM7');
     await page.click('#btnCustomApply');
     await page.waitForTimeout(200);
     const after = await page.evaluate(() => activeProg.map(c => c.label));
@@ -42,3 +42,4 @@ test.describe('Custom Progression & Single Chord Drill', () => {
     expect(histLen).toBeGreaterThan(0);
   });
 });
+

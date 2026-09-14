@@ -765,7 +765,122 @@ const UI={
   }
 };
 
+
+// --- GUI Builder Logic ---
+const ProgBuilder = {
+  state: [],
+  selectedRoot: 'C',
+  roots: ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'],
+  quals: ['M7','m7','7','m7b5','dim7','6','m6','sus4','7sus4','add9'],
+  STORAGE_KEY: 'jazz-degree-custom-saves',
+  
+  init() {
+    let rHtml = '';
+    this.roots.forEach(r => rHtml += `<button class="btn btn-sm gui-btn-root" data-val="${r}">${r}</button>`);
+    document.getElementById('guiRoots').innerHTML = rHtml;
+    
+    let qHtml = '';
+    this.quals.forEach(q => qHtml += `<button class="btn btn-sm gui-btn-qual" data-val="${q}">${q}</button>`);
+    document.getElementById('guiQuals').innerHTML = qHtml;
+
+    document.querySelectorAll('.gui-btn-root').forEach(b => {
+      b.onclick = (e) => {
+        this.selectedRoot = e.target.dataset.val;
+        this.renderPalette();
+      };
+    });
+    
+    document.querySelectorAll('.gui-btn-qual').forEach(b => {
+      b.onclick = (e) => {
+        const q = e.target.dataset.val;
+        this.state.push(this.selectedRoot + q);
+        this.renderTimeline();
+      };
+    });
+    
+    document.getElementById('btnCustomSave').onclick = () => this.saveProg();
+    
+    // Load textarea content to state on open
+    document.getElementById('btnCustomProg').addEventListener('click', () => {
+      const t = document.getElementById('customProgTxt').value.trim();
+      this.state = t ? t.split(/\s+/) : [];
+      this.renderPalette();
+      this.renderTimeline();
+      this.renderSavedList();
+    });
+  },
+  
+  renderPalette() {
+    document.querySelectorAll('.gui-btn-root').forEach(b => {
+      if(b.dataset.val === this.selectedRoot) {
+        b.style.background = 'var(--accent)';
+        b.style.color = '#000';
+      } else {
+        b.style.background = '';
+        b.style.color = '';
+      }
+    });
+  },
+  
+  renderTimeline() {
+    let html = '';
+    this.state.forEach((c, idx) => {
+      html += `<div class="prog-block" style="background:#444; color:#fff; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="ProgBuilder.remove(${idx})">${c} <span style="font-size:10px; opacity:0.6">&times;</span></div>`;
+    });
+    document.getElementById('guiProgTimeline').innerHTML = html;
+    
+    // Sync to hidden textarea
+    document.getElementById('customProgTxt').value = this.state.join(' ');
+  },
+  
+  remove(idx) {
+    this.state.splice(idx, 1);
+    this.renderTimeline();
+  },
+  
+  getSaved() {
+    return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
+  },
+  
+  saveProg() {
+    if(this.state.length === 0) return;
+    let s = this.getSaved();
+    s.push(this.state.join(' '));
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s));
+    this.renderSavedList();
+  },
+  
+  removeSaved(idx) {
+    let s = this.getSaved();
+    s.splice(idx, 1);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s));
+    this.renderSavedList();
+  },
+  
+  loadSaved(idx) {
+    let s = this.getSaved();
+    if(s[idx]) {
+      this.state = s[idx].split(' ');
+      this.renderTimeline();
+    }
+  },
+  
+  renderSavedList() {
+    let s = this.getSaved();
+    let html = '';
+    s.forEach((prog, idx) => {
+      html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px;">
+        <div style="flex:1; cursor:pointer;" onclick="ProgBuilder.loadSaved(${idx})">${prog}</div>
+        <button class="btn btn-sm btn-red" onclick="ProgBuilder.removeSaved(${idx})" style="padding:2px 6px;">&times;</button>
+      </div>`;
+    });
+    document.getElementById('guiSavedList').innerHTML = html;
+  }
+};
+
 document.addEventListener('DOMContentLoaded',()=>{
+  ProgBuilder.init();
+
   let s=Settings.load();
   currentLang=s.lang||'en';
   App.bpm=s.bpm||120; App.testMode=s.mode||false; App.level=s.level||'intermediate';
